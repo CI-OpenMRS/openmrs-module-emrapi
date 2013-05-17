@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 
 public class GeneralUtilsTest {
 
-    @Test //teste
+    @Test 
     public void shouldGetDefaultLocaleForUser() {
         User user = new User();
         user.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "ht");
