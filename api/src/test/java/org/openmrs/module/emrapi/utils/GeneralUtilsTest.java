@@ -6,14 +6,14 @@ import org.openmrs.Patient;
 import org.openmrs.User;
 import org.openmrs.util.OpenmrsConstants;
 
-import java.util.Date;
+import java.util.Date; 
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class GeneralUtilsTest {
 
-    @Test
+    @Test //teste
     public void shouldGetDefaultLocaleForUser() {
         User user = new User();
         user.setUserProperty(OpenmrsConstants.USER_PROPERTY_DEFAULT_LOCALE, "ht");
