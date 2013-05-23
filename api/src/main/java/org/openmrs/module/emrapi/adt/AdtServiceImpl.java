@@ -448,6 +448,32 @@ public class AdtServiceImpl extends BaseOpenmrsService implements AdtService {
         return active;
     }
 
+    @Override
+    public List<VisitDomainWrapper> getInpatientVisits(Location visitLocation) {
+
+        if (visitLocation == null) {
+            throw new IllegalArgumentException("Location is required");
+        }
+        Set<Location> locations = getChildLocationsRecursively(visitLocation, null);
+        List<Visit> candidates = visitService.getVisits(null, null, locations, null, null, null, null, null, null, false,
+                false);
+
+        List<VisitDomainWrapper> inpatientVisits = new ArrayList<VisitDomainWrapper>();
+        for (Visit candidate : candidates) {
+            VisitDomainWrapper visitDomainWrapper = new VisitDomainWrapper(candidate, emrApiProperties);
+            if (isActive(candidate) && itBelongsToARealPatient(candidate)
+                    && visitDomainWrapper.isAdmitted()) {
+                inpatientVisits.add(visitDomainWrapper);
+            }
+        }
+
+        return inpatientVisits;
+    }
+
+    private boolean isInpatient(Visit candidate) {
+        return false;
+    }
+
     private boolean itBelongsToARealPatient(Visit candidate) {
         Patient patient = candidate.getPatient();
         PatientDomainWrapper domainWrapper = new PatientDomainWrapper(patient, emrApiProperties, null, null, null);
@@ -682,9 +708,9 @@ public class AdtServiceImpl extends BaseOpenmrsService implements AdtService {
 
         visit.errorIfOutsideVisit(dischargeDatetime, "Invalid dischargeDatetime");
 
-        EncounterType dischargeEncounterType = emrApiProperties.getDischargeEncounterType();
+        EncounterType dischargeEncounterType = emrApiProperties.getExitFromInpatientEncounterType();
         if (dischargeEncounterType == null) {
-            throw new IllegalStateException("Configuration required: " + EmrApiConstants.GP_DISCHARGE_ENCOUNTER_TYPE);
+            throw new IllegalStateException("Configuration required: " + EmrApiConstants.GP_EXIT_FROM_INPATIENT_ENCOUNTER_TYPE);
         }
 
         Encounter encounter = buildEncounter(dischargeEncounterType, visit.getVisit().getPatient(), discharge.getLocation(), dischargeDatetime, null, null);
@@ -722,6 +748,11 @@ public class AdtServiceImpl extends BaseOpenmrsService implements AdtService {
         visit.addEncounter(encounter);
         encounterService.saveEncounter(encounter);
         return encounter;
+    }
+
+    @Override
+    public VisitDomainWrapper wrap(Visit visit) {
+        return new VisitDomainWrapper(visit, emrApiProperties);
     }
 
 }
